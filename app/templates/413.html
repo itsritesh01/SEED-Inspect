@@ -1,0 +1,15 @@
+
+{% extends "base.html" %}
+
+{% block title %}File too large · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-4">
+    <h1 class="h3 fw-semibold">File too large</h1>
+    <p>
+        The upload is larger than the allowed size.
+        Use a JPG, PNG, or PDF of 5 MB or less.
+    </p>
+    <a href="{{ url_for('main.home') }}">Back to home</a>
+</section>
+{% endblock %}

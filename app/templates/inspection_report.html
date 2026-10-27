@@ -1,0 +1,148 @@
+
+{% extends "base.html" %}
+
+{% block title %}Report {{ inspection.inspection_number }} · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3 report-sheet">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 no-print mb-3">
+        <a href="{{ url_for('inspections.inspection_detail', inspection_id=inspection.id) }}">Back to inspection</a>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" href="{{ url_for('reports.inspection_pdf', inspection_id=inspection.id) }}">Download PDF</a>
+            <button class="btn btn-seed" type="button" onclick="window.print()">Print</button>
+        </div>
+    </div>
+
+    <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 10</p>
+    <h1 class="h3 fw-semibold mb-1">Inspection report</h1>
+    <p class="text-secondary">
+        Academic prototype. This page is a print-friendly view of records already saved.
+        It is not a company approval. Use Download PDF for the file.
+    </p>
+
+    <h2 class="h5">{{ inspection.inspection_number }} — {{ inspection.title }}</h2>
+    <table class="table table-bordered">
+        <tbody>
+            <tr><th scope="row">Project</th><td>{{ inspection.project.code }} — {{ inspection.project.name }}</td></tr>
+            <tr><th scope="row">Site</th><td>{{ inspection.site.code }} — {{ inspection.site.name }}</td></tr>
+            <tr><th scope="row">Type</th><td>{{ type_labels.get(inspection.inspection_type, inspection.inspection_type) }}</td></tr>
+            <tr><th scope="row">Status</th><td>{{ status_labels.get(inspection.status, inspection.status) }}</td></tr>
+            <tr>
+                <th scope="row">Scheduled date</th>
+                <td>{% if inspection.scheduled_date %}{{ inspection.scheduled_date.strftime("%d %b %Y") }}{% else %}Not recorded{% endif %}</td>
+            </tr>
+            <tr>
+                <th scope="row">Inspector</th>
+                <td>{% if inspection.inspector %}{{ inspection.inspector.full_name }}{% else %}Not assigned{% endif %}</td>
+            </tr>
+            <tr>
+                <th scope="row">Started</th>
+                <td>{% if inspection.started_at %}{{ inspection.started_at.strftime("%d %b %Y %H:%M UTC") }}{% else %}Not recorded{% endif %}</td>
+            </tr>
+            <tr>
+                <th scope="row">Completed</th>
+                <td>{% if inspection.completed_at %}{{ inspection.completed_at.strftime("%d %b %Y %H:%M UTC") }}{% else %}Not recorded{% endif %}</td>
+            </tr>
+            <tr><th scope="row">Summary</th><td>{{ inspection.summary or "Not recorded" }}</td></tr>
+        </tbody>
+    </table>
+
+    <h2 class="h5">Checklist</h2>
+    <p>
+        Pass {{ counts.pass }}.
+        Fail {{ counts.fail }}.
+        Not applicable {{ counts.not_applicable }}.
+        Not inspected {{ counts.not_inspected }}.
+    </p>
+
+    {% if items %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Order</th>
+                    <th scope="col">Line</th>
+                    <th scope="col">Result</th>
+                    <th scope="col">Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td>{{ item.sort_order }}</td>
+                        <td>{{ item.item_text }}</td>
+                        <td>{{ result_labels.get(item.result, item.result) }}</td>
+                        <td>{{ item.notes or "—" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No checklist lines.</p>
+    {% endif %}
+
+    <p class="small text-secondary">A Fail line is a checklist result. It does not create a finding by itself.</p>
+
+    <h2 class="h5">Findings and corrective actions</h2>
+    {% if findings %}
+        {% for item in findings %}
+            {% set finding = item.record %}
+            <h3 class="h6 mt-3">{{ finding.title }}</h3>
+            <p class="mb-1">
+                Severity: {{ severity_labels.get(finding.severity, finding.severity) }}.
+                Status: {{ finding_status_labels.get(finding.status, finding.status) }}.
+            </p>
+            <p class="mb-1">{{ finding.description }}</p>
+            <p class="mb-1">Evidence note: {{ finding.evidence_note or "Not recorded" }}</p>
+            <p class="mb-1">
+                Files on this finding:
+                {% if item.files %}{{ item.files|join(", ") }}{% else %}None{% endif %}
+            </p>
+
+            {% if item.actions %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Action</th>
+                            <th scope="col">Responsible person</th>
+                            <th scope="col">Due</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Files</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for action_item in item.actions %}
+                            {% set action = action_item.record %}
+                            <tr>
+                                <td>{{ action.action_text }}</td>
+                                <td>{{ action.responsible_name }}</td>
+                                <td>{{ action.due_date.strftime("%d %b %Y") }}</td>
+                                <td>{{ action_status_labels.get(action.status, action.status) }}</td>
+                                <td>{% if action_item.files %}{{ action_item.files|join(", ") }}{% else %}None{% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No corrective actions for this finding.</p>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p>No findings have been recorded for this inspection.</p>
+    {% endif %}
+
+    <h2 class="h5">Files on this inspection</h2>
+    {% if inspection_files %}
+        <ul>
+            {% for name in inspection_files %}
+                <li>{{ name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>None.</p>
+    {% endif %}
+
+    <p class="small text-secondary">This report lists file names. It does not place the picture or PDF attachment inside the page.</p>
+
+    <p class="small text-secondary mb-0">Generated {{ generated_at.strftime("%d %b %Y %H:%M UTC") }}.</p>
+</section>
+{% endblock %}

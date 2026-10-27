@@ -1,0 +1,95 @@
+
+{% extends "base.html" %}
+
+{% block title %}Corrective Actions | SEED Inspect{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h2">Corrective Actions</h1>
+        <p class="text-muted mb-0">Track action status and due dates.</p>
+    </div>
+</div>
+
+<form method="get" action="{{ url_for('dashboard.action_list') }}" class="card card-body shadow-sm mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label for="status" class="form-label">Action status</label>
+            <select class="form-select" name="status" id="status">
+                <option value="all" {% if status == "all" %}selected{% endif %}>All actions</option>
+                <option value="unfinished" {% if status == "unfinished" %}selected{% endif %}>Not finished</option>
+                <option value="open" {% if status == "open" %}selected{% endif %}>Open</option>
+                <option value="in_progress" {% if status == "in_progress" %}selected{% endif %}>In progress</option>
+                <option value="completed" {% if status == "completed" %}selected{% endif %}>Completed</option>
+            </select>
+        </div>
+        <div class="col-md-5">
+            <label for="due" class="form-label">Due date</label>
+            <select class="form-select" name="due" id="due">
+                <option value="all" {% if due == "all" %}selected{% endif %}>All due dates</option>
+                <option value="past" {% if due == "past" %}selected{% endif %}>Past due</option>
+                <option value="not_past" {% if due == "not_past" %}selected{% endif %}>Not past due</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-seed">Filter</button>
+            <a href="{{ url_for('dashboard.action_list') }}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Corrective action</th>
+                    <th>Responsible person</th>
+                    <th>Status</th>
+                    <th>Due date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for action in rows %}
+                <tr>
+                    <td>{{ action.action_text }}</td>
+                    <td>{{ action.responsible_name or '—' }}</td>
+                    <td>
+                        {% if action.status in status_labels %}
+                            {{ status_labels[action.status] }}
+                        {% else %}
+                            {{ action.status|replace('_', ' ')|title }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if action.due_date %}
+                            <span {% if action.status != 'completed' and action.due_date < today %}class="text-danger fw-semibold"{% endif %}>
+                                {{ action.due_date.strftime('%d %b %Y') }}
+                            </span>
+                            {% if action.status != 'completed' and action.due_date < today %}
+                                <span class="badge text-bg-danger">Past due</span>
+                            {% endif %}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{{ url_for('findings.action_detail', finding_id=action.finding_id, action_id=action.id) }}">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        No corrective actions match these filters.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="row justify-content-center py-3">
+    <div class="col-lg-8">
+        <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 6</p>
+        <h1 class="h3 fw-semibold">{{ heading }}</h1>
+        <p class="text-secondary">
+            This finding stays on inspection <code>{{ inspection.inspection_number }}</code>,
+            {{ inspection.title }}.
+        </p>
+
+        <form method="post" class="card shadow-sm" novalidate>
+            <div class="card-body p-4">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    <label class="form-label" for="title">Title</label>
+                    {{ form.title(class="form-control", id="title") }}
+                    {% for error in form.title.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="description">Description</label>
+                    {{ form.description(class="form-control", id="description", rows="4") }}
+                    {% for error in form.description.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="severity">Severity</label>
+                        {{ form.severity(class="form-select", id="severity") }}
+                        {% for error in form.severity.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="status">Status</label>
+                        {{ form.status(class="form-select", id="status") }}
+                        {% for error in form.status.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="evidence_note">Evidence note</label>
+                    {{ form.evidence_note(class="form-control", id="evidence_note", rows="3") }}
+                    <div class="form-text">
+                        What was seen. Do not upload a file in this stage.
+                    </div>
+                    {% for error in form.evidence_note.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <button class="btn btn-seed" type="submit">Save finding</button>
+                <a class="btn btn-link" href="{{ cancel_url }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

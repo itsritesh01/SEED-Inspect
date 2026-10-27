@@ -1,0 +1,60 @@
+
+{% extends "base.html" %}
+
+{% block title %}Add user · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="row justify-content-center py-3">
+    <div class="col-lg-7">
+        <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 3</p>
+        <h1 class="h3 fw-semibold">Add user</h1>
+        <p class="text-secondary">
+            Choose a temporary password and give it to that person yourself.
+            The page will not show the password again. Use a fictional person, not a real employee.
+        </p>
+        <form method="post" class="card shadow-sm" novalidate>
+            <div class="card-body p-4">
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    <label class="form-label" for="full_name">Full name</label>
+                    {{ form.full_name(class="form-control", id="full_name") }}
+                    {% for error in form.full_name.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="email">Email</label>
+                    {{ form.email(class="form-control", id="email", autocomplete="off") }}
+                    {% for error in form.email.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="role">Role</label>
+                    {{ form.role(class="form-select", id="role") }}
+                    {% for error in form.role.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="password">Temporary password</label>
+                    {{ form.password(class="form-control", id="password", autocomplete="new-password") }}
+                    <div class="form-text">At least 10 characters. Do not use the email address.</div>
+                    {% for error in form.password.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="password_confirm">Repeat temporary password</label>
+                    {{ form.password_confirm(class="form-control", id="password_confirm", autocomplete="new-password") }}
+                    {% for error in form.password_confirm.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <button class="btn btn-seed" type="submit">Create user</button>
+                <a class="btn btn-link" href="{{ url_for('accounts.user_list') }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

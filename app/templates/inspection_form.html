@@ -1,0 +1,146 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="row justify-content-center py-3">
+    <div class="col-lg-8">
+        <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 5</p>
+        <h1 class="h3 fw-semibold">{{ heading }}</h1>
+
+        {% if not project %}
+            <p class="text-secondary">
+                Choose the fictional project first. The next page lists only that project's sites.
+            </p>
+
+            {% if projects %}
+                <form method="get" class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <label class="form-label" for="project_id">Project</label>
+                        <select class="form-select mb-3" id="project_id"
+                                name="project_id" required>
+                            {% for item in projects %}
+                                <option value="{{ item.id }}">
+                                    {{ item.code }} — {{ item.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-seed" type="submit">Continue</button>
+                        <a class="btn btn-link" href="{{ cancel_url }}">Cancel</a>
+                    </div>
+                </form>
+            {% else %}
+                <div class="alert alert-warning" role="status">
+                    Create a project and a site before adding an inspection.
+                </div>
+            {% endif %}
+        {% else %}
+            <p class="text-secondary">
+                Project: <strong>{{ project.name }}</strong>
+                (<code>{{ project.code }}</code>).
+                This inspection stays on this project.
+            </p>
+
+            {% if not has_sites %}
+                <div class="alert alert-warning" role="status">
+                    This project has no sites. Add a site, then come back.
+                </div>
+                <a class="btn btn-seed"
+                   href="{{ url_for('projects.project_detail', project_id=project.id) }}">
+                    Back to project
+                </a>
+            {% else %}
+                <form method="post" class="card shadow-sm" novalidate>
+                    <div class="card-body p-4">
+                        {{ form.hidden_tag() }}
+                        <input type="hidden" name="project_id" value="{{ project.id }}">
+
+                        <div class="mb-3">
+                            <label class="form-label" for="site_id">Site</label>
+                            {{ form.site_id(class="form-select", id="site_id") }}
+                            {% for error in form.site_id.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="inspection_number">
+                                Inspection number
+                            </label>
+                            {{ form.inspection_number(class="form-control", id="inspection_number") }}
+                            <div class="form-text">
+                                Letters, numbers, and hyphens. Example: INS-01.
+                            </div>
+                            {% for error in form.inspection_number.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="title">Title</label>
+                            {{ form.title(class="form-control", id="title") }}
+                            {% for error in form.title.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="inspection_type">
+                                    Inspection type
+                                </label>
+                                {{ form.inspection_type(class="form-select", id="inspection_type") }}
+                                {% for error in form.inspection_type.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="status">Status</label>
+                                {{ form.status(class="form-select", id="status") }}
+                                {% for error in form.status.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="scheduled_date">
+                                    Scheduled date
+                                </label>
+                                {{ form.scheduled_date(class="form-control", id="scheduled_date") }}
+                                {% for error in form.scheduled_date.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label" for="inspector_id">
+                                    Inspector
+                                </label>
+                                {{ form.inspector_id(class="form-select", id="inspector_id") }}
+                                {% for error in form.inspector_id.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="summary">Summary</label>
+                            {{ form.summary(class="form-control", id="summary", rows="4") }}
+                            {% for error in form.summary.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <button class="btn btn-seed" type="submit">Save inspection</button>
+                        <a class="btn btn-link" href="{{ cancel_url }}">Cancel</a>
+                    </div>
+                </form>
+            {% endif %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

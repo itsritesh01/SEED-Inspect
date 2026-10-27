@@ -1,0 +1,79 @@
+
+{% extends "base.html" %}
+
+{% block title %}Findings | SEED Inspect{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h2">Findings</h1>
+        <p class="text-muted mb-0">Review inspection findings and their status.</p>
+    </div>
+</div>
+
+<form method="get" class="card card-body shadow-sm mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+            <label for="status" class="form-label">Filter by status</label>
+            <select name="status" id="status" class="form-select">
+                <option value="all" {% if status == "all" %}selected{% endif %}>All findings</option>
+                <option value="unfinished" {% if status == "unfinished" %}selected{% endif %}>Not finished</option>
+                <option value="open" {% if status == "open" %}selected{% endif %}>Open</option>
+                <option value="in_progress" {% if status == "in_progress" %}selected{% endif %}>In progress</option>
+                <option value="closed" {% if status == "closed" %}selected{% endif %}>Closed</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-seed">Apply filter</button>
+            <a href="{{ url_for('findings.finding_list') }}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </div>
+</form>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Finding</th>
+                    <th>Status</th>
+                    <th>Severity</th>
+                    <th>Inspection</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for finding in findings %}
+                <tr>
+                    <td>
+                        <div class="fw-semibold">{{ finding.title }}</div>
+                        <div class="small text-muted">{{ finding.description|truncate(100) }}</div>
+                    </td>
+                    <td>{{ finding.status|replace('_', ' ')|title }}</td>
+                    <td>{{ finding.severity|title }}</td>
+                    <td>
+                        {% if finding.inspection %}
+                            {{ finding.inspection.inspection_number }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary"
+                           href="{{ url_for('findings.finding_detail', finding_id=finding.id) }}">
+                            View
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        No findings match this filter.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Home · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3">
+    
+    <h1 class="display-6 fw-semibold">Engineering Site Inspection and Reporting System</h1>
+    <p class="lead text-secondary">
+        SEED Inspect is a student prototype for organizing engineering projects,
+        construction or environmental sites, inspections, checklists, findings,
+        corrective actions, and reports.
+    </p>
+
+    {% if current_user.is_authenticated %}
+        <div class="alert alert-success" role="status">
+            Signed in as {{ current_user.full_name }} ({{ current_user.role_label }}).
+        </div>
+        {% if current_user.role == "administrator" %}
+            <p>The practice records are fictional. Open About for what this prototype does. The written steps are in README.md in the project folder.</p>
+        {% elif current_user.role == "inspector" %}
+            <p>The practice records are fictional. Open About for what this prototype does. Only an administrator can open the audit log.</p>
+        {% else %}
+            <p>You can look, search, and download a PDF. You cannot change records or open the audit log. The records are fictional.</p>
+        {% endif %}
+        <a class="btn btn-seed" href="{{ url_for('dashboard.dashboard') }}">Open dashboard</a>
+    {% else %}
+        <div class="alert alert-secondary" role="status">
+            You are not signed in. There is no public registration page.
+            <a href="{{ url_for('accounts.login') }}">Sign in</a>
+            with the administrator account created on this computer.
+        </div>
+    {% endif %}
+</section>
+
+<section class="row g-3 pb-3">
+    <div class="col-md-4">
+        <div class="card stage-card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Projects and sites</h2>
+                <p class="card-text text-secondary mb-0">
+                    Signed-in people can open Projects. Administrators and inspectors can add fictional projects and the sites that belong to them. Viewers can look, but not change them.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stage-card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Inspections</h2>
+                <p class="card-text text-secondary mb-0">
+                    An inspection is one visit to a site. A problem found during that visit can be recorded as a finding, with one or more corrective actions.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stage-card h-100 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Reports</h2>
+                <p class="card-text text-secondary mb-0">
+                    Open an inspection and choose Download PDF. The file is created when you click it. It is not stored as a new database row.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

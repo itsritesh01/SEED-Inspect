@@ -1,0 +1,62 @@
+
+{% if files %}
+    <div class="table-responsive card shadow-sm mb-3">
+        <table class="table table-striped align-middle mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">File</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Uploaded by</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                    <tr>
+                        <td>{{ file.original_name }}</td>
+                        <td><code>{{ file.extension }}</code></td>
+                        <td>{{ (file.file_size / 1024)|round(1) }} KB</td>
+                        <td>
+                            {% if file.uploaded_by %}
+                                {{ file.uploaded_by.full_name }}
+                            {% else %}
+                                Not recorded
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            <a href="{{ url_for('uploads.download', attachment_id=file.id) }}">Download</a>
+                            {% if can_edit %}
+                                <form method="post"
+                                      action="{{ url_for('uploads.delete_attachment', attachment_id=file.id) }}"
+                                      class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-outline-secondary" type="submit">Remove</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-secondary" role="status">No files yet.</div>
+{% endif %}
+
+{% if can_edit %}
+    <form method="post"
+          action="{{ upload_url }}"
+          enctype="multipart/form-data"
+          class="card shadow-sm">
+        <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input class="form-control"
+                   type="file"
+                   name="attachment"
+                   accept=".jpg,.jpeg,.png,.pdf"
+                   required>
+            <button class="btn btn-seed" type="submit">Upload file</button>
+        </div>
+    </form>
+{% endif %}

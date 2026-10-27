@@ -1,0 +1,225 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }} · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3">
+    <p class="mb-2">
+        <a href="{{ url_for('projects.project_list') }}">Back to projects</a>
+    </p>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+            <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 5</p>
+            <h1 class="h3 fw-semibold mb-1">{{ project.name }}</h1>
+            <p class="mb-2"><code>{{ project.code }}</code></p>
+
+            {% if project.status == 'active' %}
+                <span class="badge text-bg-success">Active</span>
+            {% else %}
+                <span class="badge text-bg-secondary">Archived</span>
+            {% endif %}
+        </div>
+
+        {% if can_edit %}
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-seed"
+                   href="{{ url_for('projects.project_edit', project_id=project.id) }}">
+                    Edit project
+                </a>
+
+                {% if project.status == 'active' %}
+                    <form method="post"
+                          action="{{ url_for('projects.project_archive', project_id=project.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            Archive project
+                        </button>
+                    </form>
+                {% else %}
+                    <form method="post"
+                          action="{{ url_for('projects.project_restore', project_id=project.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            Restore project
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    {% if project.status == 'archived' %}
+        <div class="alert alert-secondary mt-3" role="status">
+            This project is archived. Its sites are still here. Nothing was deleted.
+        </div>
+    {% endif %}
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Client</dt>
+                <dd class="col-sm-9">{{ project.client_name or "Not recorded" }}</dd>
+
+                <dt class="col-sm-3">Location</dt>
+                <dd class="col-sm-9">{{ project.location_summary or "Not recorded" }}</dd>
+
+                <dt class="col-sm-3">Start date</dt>
+                <dd class="col-sm-9">
+                    {% if project.start_date %}
+                        {{ project.start_date.strftime("%d %b %Y") }}
+                    {% else %}
+                        Not recorded
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">End date</dt>
+                <dd class="col-sm-9">
+                    {% if project.end_date %}
+                        {{ project.end_date.strftime("%d %b %Y") }}
+                    {% else %}
+                        Not recorded
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">{{ project.description or "Not recorded" }}</dd>
+
+                <dt class="col-sm-3">Created by</dt>
+                <dd class="col-sm-9">
+                    {% if project.created_by %}
+                        {{ project.created_by.full_name }}
+                    {% else %}
+                        Not recorded
+                    {% endif %}
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 mb-2">
+        <h2 class="h4 fw-semibold mb-0">Sites</h2>
+        {% if can_edit %}
+            <a class="btn btn-seed"
+               href="{{ url_for('projects.site_new', project_id=project.id) }}">
+                Add site
+            </a>
+        {% endif %}
+    </div>
+
+    <p class="text-secondary">
+        A site belongs to this project. The same site code may be used on a different project.
+    </p>
+
+    {% if sites %}
+        <div class="table-responsive card shadow-sm">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Code</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Address</th>
+                        <th scope="col">Status</th>
+                        {% if can_edit %}
+                            <th scope="col">Action</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for site in sites %}
+                        <tr>
+                            <td><code>{{ site.code }}</code></td>
+                            <td>{{ site.name }}</td>
+                            <td>{{ site_type_labels.get(site.site_type, site.site_type) }}</td>
+                            <td>{{ site.address or "—" }}</td>
+                            <td>
+                                {% if site.is_active %}
+                                    <span class="badge text-bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge text-bg-secondary">Turned off</span>
+                                {% endif %}
+                            </td>
+                            {% if can_edit %}
+                                <td>
+                                    <a href="{{ url_for('projects.site_edit', project_id=project.id, site_id=site.id) }}">
+                                        Edit
+                                    </a>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-secondary" role="status">
+            No sites have been added to this project.
+        </div>
+    {% endif %}
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 mb-2">
+        <h2 class="h4 fw-semibold mb-0">Inspections</h2>
+        {% if can_edit %}
+            <a class="btn btn-seed"
+               href="{{ url_for('inspections.inspection_new', project_id=project.id) }}">
+                Add inspection
+            </a>
+        {% endif %}
+    </div>
+
+    <p class="text-secondary">
+        An inspection is one visit to a site on this project.
+        Checklist lines are recorded on the inspection page.
+    </p>
+
+    {% if inspections %}
+        <div class="table-responsive card shadow-sm">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Number</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Site</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Scheduled</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inspection in inspections %}
+                        <tr>
+                            <td><code>{{ inspection.inspection_number }}</code></td>
+                            <td>
+                                <a href="{{ url_for('inspections.inspection_detail', inspection_id=inspection.id) }}">
+                                    {{ inspection.title }}
+                                </a>
+                            </td>
+                            <td>{{ inspection.site.code }} — {{ inspection.site.name }}</td>
+                            <td>
+                                {% if inspection.status == 'draft' %}Draft
+                                {% elif inspection.status == 'in_progress' %}In progress
+                                {% elif inspection.status == 'completed' %}Completed
+                                {% elif inspection.status == 'cancelled' %}Cancelled
+                                {% else %}{{ inspection.status }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if inspection.scheduled_date %}
+                                    {{ inspection.scheduled_date.strftime("%d %b %Y") }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-secondary" role="status">
+            No inspections have been added to this project yet.
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

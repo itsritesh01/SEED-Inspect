@@ -1,0 +1,16 @@
+
+{% extends "base.html" %}
+
+{% block title %}Access denied · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-5 text-center">
+    <p class="display-4 fw-bold text-danger">403</p>
+    <h1 class="h3">Access denied</h1>
+    <p class="text-secondary">
+        You do not have permission to open this page.
+        Contact an administrator if you need access.
+    </p>
+    <a class="btn btn-seed" href="{{ url_for('main.home') }}">Return home</a>
+</section>
+{% endblock %}

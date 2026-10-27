@@ -1,0 +1,86 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="row justify-content-center py-3">
+    <div class="col-lg-8">
+        <p class="mb-2">
+            <a href="{{ url_for('findings.finding_detail', finding_id=finding.id) }}">
+                Back to {{ finding.title }}
+            </a>
+        </p>
+
+        <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 6</p>
+        <h1 class="h3 fw-semibold">{{ heading }}</h1>
+
+        <p class="text-secondary">
+            This action belongs to the finding only. The responsible person can be a name,
+            and can also be linked to an active account.
+        </p>
+
+        <form method="post" class="card shadow-sm" novalidate>
+            <div class="card-body p-4">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    <label class="form-label" for="action_text">Action</label>
+                    {{ form.action_text(class="form-control", id="action_text", rows="4") }}
+                    {% for error in form.action_text.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="responsible_name">Responsible person</label>
+                    {{ form.responsible_name(class="form-control", id="responsible_name") }}
+                    {% for error in form.responsible_name.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="responsible_user_id">Link to an account</label>
+                    {{ form.responsible_user_id(class="form-select", id="responsible_user_id") }}
+                    <div class="form-text">
+                        Optional. Linking an account does not let that person edit the finding.
+                    </div>
+                    {% for error in form.responsible_user_id.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="due_date">Due date</label>
+                        {{ form.due_date(class="form-control", id="due_date") }}
+                        {% for error in form.due_date.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="status">Status</label>
+                        {{ form.status(class="form-select", id="status") }}
+                        {% for error in form.status.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="progress_note">Progress note</label>
+                    {{ form.progress_note(class="form-control", id="progress_note", rows="3") }}
+                    {% for error in form.progress_note.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <button class="btn btn-seed" type="submit">Save corrective action</button>
+                <a class="btn btn-link" href="{{ cancel_url }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

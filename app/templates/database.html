@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Database check · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3">
+    <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 12</p>
+    <h1 class="h3 fw-semibold">Database check</h1>
+    <p class="text-secondary">
+        Only an administrator can open this page.
+        It shows table names and how many records each table holds.
+        It does not add projects or inspections.
+    </p>
+
+    {% if missing %}
+        <div class="alert alert-warning" role="status">
+            The tables are missing. Stop the website with Ctrl+C, then run
+            <code>python init_db.py</code> and start the website again.
+        </div>
+    {% elif ready %}
+        <div class="alert alert-success" role="status">
+            All 9 tables are present. The demonstration script adds only missing fictional records.
+            It does not delete rows. Opening this page does not add an audit row.
+        </div>
+    {% endif %}
+
+    <p class="mb-4">
+        <span class="fw-semibold">Database file:</span>
+        <code>{{ db_file }}</code>
+    </p>
+
+    {% if rows %}
+        <div class="table-responsive card shadow-sm">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Table</th>
+                        <th scope="col">Records</th>
+                        <th scope="col">What it will hold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td><code>{{ row.name }}</code></td>
+                            <td>
+                                {% if row.count is none %}
+                                    missing
+                                {% else %}
+                                    {{ row.count }}
+                                {% endif %}
+                            </td>
+                            <td>{{ row.explanation }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

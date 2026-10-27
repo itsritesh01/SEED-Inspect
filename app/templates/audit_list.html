@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Audit log · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3">
+    <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 11</p>
+    <h1 class="h3 fw-semibold">Audit log</h1>
+    <p class="text-secondary">
+        Only an administrator can open this page.
+        It lists sign-ins and changes made after this stage was added.
+        Older practice records were not copied into this list.
+        Passwords are never written here. Rows are not edited or deleted.
+    </p>
+
+    <form method="get" class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label" for="q">Search the message</label>
+                    <input class="form-control" id="q" name="q" value="{{ q }}" maxlength="100">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="action">Action</label>
+                    <select class="form-select" id="action" name="action">
+                        <option value="all" {% if action == 'all' %}selected{% endif %}>All actions</option>
+                        {% for value, label in action_labels.items() %}
+                            <option value="{{ value }}" {% if action == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-seed" type="submit">Filter</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    {% if rows %}
+        <p class="small text-secondary">
+            Showing {{ rows|length }} of {{ total }}.
+            {% if total > rows|length %}Only the latest 100 are shown.{% endif %}
+        </p>
+        <div class="table-responsive card shadow-sm">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">When (UTC)</th>
+                        <th scope="col">Who</th>
+                        <th scope="col">Action</th>
+                        <th scope="col">Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td class="text-nowrap">{{ row.created_at.strftime("%d %b %Y %H:%M") }}</td>
+                            <td>
+                                {% if row.user %}{{ row.user.full_name }}{% else %}Not signed in{% endif %}
+                            </td>
+                            <td>{{ action_labels.get(row.action, row.action) }}</td>
+                            <td>{{ row.message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-secondary" role="status">No audit rows match this filter.</div>
+    {% endif %}
+</section>
+{% endblock %}

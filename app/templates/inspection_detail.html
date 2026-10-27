@@ -1,0 +1,231 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ inspection.inspection_number }} · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3">
+    <p class="mb-2">
+        <a href="{{ url_for('inspections.inspection_list') }}">Back to inspections</a>
+        ·
+        <a href="{{ url_for('projects.project_detail', project_id=inspection.project_id) }}">{{ inspection.project.name }}</a>
+    </p>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+            <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 7</p>
+            <h1 class="h3 fw-semibold mb-1">{{ inspection.title }}</h1>
+            <p class="mb-2"><code>{{ inspection.inspection_number }}</code></p>
+            <span class="badge text-bg-secondary">{{ status_labels.get(inspection.status, inspection.status) }}</span>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" href="{{ url_for('reports.inspection_report', inspection_id=inspection.id) }}">View report</a>
+            <a class="btn btn-outline-secondary" href="{{ url_for('reports.inspection_pdf', inspection_id=inspection.id) }}">Download PDF</a>
+            {% if can_edit %}
+                <a class="btn btn-seed" href="{{ url_for('inspections.inspection_edit', inspection_id=inspection.id) }}">Edit inspection</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Project</dt>
+                <dd class="col-sm-9">{{ inspection.project.code }} — {{ inspection.project.name }}</dd>
+
+                <dt class="col-sm-3">Site</dt>
+                <dd class="col-sm-9">{{ inspection.site.code }} — {{ inspection.site.name }}</dd>
+
+                <dt class="col-sm-3">Type</dt>
+                <dd class="col-sm-9">{{ type_labels.get(inspection.inspection_type, inspection.inspection_type) }}</dd>
+
+                <dt class="col-sm-3">Scheduled date</dt>
+                <dd class="col-sm-9">
+                    {% if inspection.scheduled_date %}{{ inspection.scheduled_date.strftime("%d %b %Y") }}{% else %}Not recorded{% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Inspector</dt>
+                <dd class="col-sm-9">
+                    {% if inspection.inspector %}{{ inspection.inspector.full_name }}{% else %}Not assigned{% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Started</dt>
+                <dd class="col-sm-9">
+                    {% if inspection.started_at %}{{ inspection.started_at.strftime("%d %b %Y %H:%M UTC") }}{% else %}Not recorded{% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Completed</dt>
+                <dd class="col-sm-9">
+                    {% if inspection.completed_at %}{{ inspection.completed_at.strftime("%d %b %Y %H:%M UTC") }}{% else %}Not recorded{% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Summary</dt>
+                <dd class="col-sm-9">{{ inspection.summary or "Not recorded" }}</dd>
+            </dl>
+        </div>
+    </div>
+
+    <h2 class="h4 fw-semibold mt-4">Checklist</h2>
+    <p class="text-secondary">
+        Each line is Pass, Fail, Not applicable, or Not inspected.
+        A Fail line is only a checklist result. It does not create a finding.
+    </p>
+
+    <p>
+        <span class="badge text-bg-success">Pass {{ counts.pass }}</span>
+        <span class="badge text-bg-danger">Fail {{ counts.fail }}</span>
+        <span class="badge text-bg-secondary">Not applicable {{ counts.not_applicable }}</span>
+        <span class="badge text-bg-light text-dark border">Not inspected {{ counts.not_inspected }}</span>
+    </p>
+
+    {% if can_edit %}
+        <form method="post" action="{{ url_for('inspections.checklist_add', inspection_id=inspection.id) }}" class="card shadow-sm mb-3">
+            <div class="card-body">
+                {{ add_form.hidden_tag() }}
+                <label class="form-label" for="item_text">New checklist line</label>
+                <div class="d-flex flex-wrap gap-2">
+                    {{ add_form.item_text(class="form-control", id="item_text", placeholder="What should be checked?") }}
+                    <button class="btn btn-seed" type="submit">Add checklist line</button>
+                </div>
+            </div>
+        </form>
+    {% endif %}
+
+    {% if items %}
+        <form method="post" action="{{ url_for('inspections.checklist_save', inspection_id=inspection.id) }}" class="card shadow-sm">
+            <div class="card-body">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                {% for item in items %}
+                    <div class="border rounded p-3 mb-3 {% if item.result == 'fail' %}border-danger{% endif %}">
+                        <input type="hidden" name="item_id" value="{{ item.id }}">
+
+                        <div class="row g-2">
+                            <div class="col-md-5">
+                                <label class="form-label" for="text-{{ item.id }}">Line</label>
+                                {% if can_edit %}
+                                    <input class="form-control" id="text-{{ item.id }}" name="item_text" value="{{ item.item_text }}" maxlength="300">
+                                {% else %}
+                                    <div>{{ item.item_text }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label" for="result-{{ item.id }}">Result</label>
+                                {% if can_edit %}
+                                    <select class="form-select" id="result-{{ item.id }}" name="result">
+                                        {% for value, label in result_labels.items() %}
+                                            <option value="{{ value }}" {% if item.result == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% else %}
+                                    <div>{{ result_labels.get(item.result, item.result) }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label" for="order-{{ item.id }}">Order</label>
+                                {% if can_edit %}
+                                    <input class="form-control" id="order-{{ item.id }}" name="sort_order" type="number" min="1" max="999" value="{{ item.sort_order }}">
+                                {% else %}
+                                    <div>{{ item.sort_order }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label" for="notes-{{ item.id }}">Notes</label>
+                                {% if can_edit %}
+                                    <textarea class="form-control" id="notes-{{ item.id }}" name="notes" rows="2" maxlength="1000">{{ item.notes or "" }}</textarea>
+                                {% else %}
+                                    <div>{{ item.notes or "—" }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+
+                {% if can_edit %}
+                    <button class="btn btn-seed" type="submit">Save checklist</button>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if can_edit %}
+            <div class="mt-3">
+                <h3 class="h6">Remove a line</h3>
+                {% for item in items %}
+                    <form method="post" action="{{ url_for('inspections.checklist_delete', inspection_id=inspection.id, item_id=item.id) }}" class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <span>{{ item.sort_order }}. {{ item.item_text }}</span>
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">Remove</button>
+                    </form>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-secondary" role="status">No checklist lines yet.</div>
+    {% endif %}
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 mb-2">
+        <h2 class="h4 fw-semibold mb-0">Findings</h2>
+        {% if can_edit %}
+            <a class="btn btn-seed" href="{{ url_for('findings.finding_new', inspection_id=inspection.id) }}">Add finding</a>
+        {% endif %}
+    </div>
+
+    <p class="text-secondary">
+        A finding is a problem you record yourself. A Fail checklist line does not create one.
+    </p>
+
+    {% if findings %}
+        <div class="table-responsive card shadow-sm">
+            <table class="table table-striped align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Title</th>
+                        <th scope="col">Severity</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for finding in findings %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('findings.finding_detail', finding_id=finding.id) }}">
+                                    {{ finding.title }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if finding.severity == 'low' %}Low
+                                {% elif finding.severity == 'medium' %}Medium
+                                {% elif finding.severity == 'high' %}High
+                                {% elif finding.severity == 'critical' %}Critical
+                                {% else %}{{ finding.severity }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if finding.status == 'open' %}Open
+                                {% elif finding.status == 'in_progress' %}In progress
+                                {% elif finding.status == 'resolved' %}Resolved
+                                {% elif finding.status == 'closed' %}Closed
+                                {% else %}{{ finding.status }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-secondary" role="status">No findings have been recorded for this inspection.</div>
+    {% endif %}
+
+    <h2 class="h4 fw-semibold mt-4">Files</h2>
+    <p class="text-secondary">JPG, PNG, or PDF only. Maximum size 5 MB. This file belongs to the inspection, not to a finding.</p>
+
+    {% with files=inspection_files, upload_url=url_for('uploads.upload_inspection', inspection_id=inspection.id) %}
+        {% include "attachment_panel.html" %}
+    {% endwith %}
+</section>
+{% endblock %}

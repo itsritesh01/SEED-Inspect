@@ -1,0 +1,153 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ finding.title }} · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3">
+    <p class="mb-2">
+        <a href="{{ url_for('findings.finding_list') }}">Back to findings</a>
+        ·
+        <a href="{{ url_for('inspections.inspection_detail', inspection_id=finding.inspection_id) }}">
+            {{ finding.inspection.inspection_number }}
+        </a>
+    </p>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+            <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 7</p>
+            <h1 class="h3 fw-semibold mb-2">{{ finding.title }}</h1>
+            <span class="badge text-bg-secondary">
+                {{ severity_labels.get(finding.severity, finding.severity) }}
+            </span>
+            <span class="badge text-bg-secondary">
+                {{ status_labels.get(finding.status, finding.status) }}
+            </span>
+        </div>
+        {% if can_edit %}
+            <a class="btn btn-seed"
+               href="{{ url_for('findings.finding_edit', finding_id=finding.id) }}">
+                Edit finding
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Inspection</dt>
+                <dd class="col-sm-9">
+                    {{ finding.inspection.inspection_number }} — {{ finding.inspection.title }}
+                </dd>
+
+                <dt class="col-sm-3">Project</dt>
+                <dd class="col-sm-9">
+                    {{ finding.inspection.project.code }} — {{ finding.inspection.project.name }}
+                </dd>
+
+                <dt class="col-sm-3">Site</dt>
+                <dd class="col-sm-9">
+                    {{ finding.inspection.site.code }} — {{ finding.inspection.site.name }}
+                </dd>
+
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">{{ finding.description }}</dd>
+
+                <dt class="col-sm-3">Evidence note</dt>
+                <dd class="col-sm-9">{{ finding.evidence_note or "Not recorded" }}</dd>
+
+                <dt class="col-sm-3">Recorded by</dt>
+                <dd class="col-sm-9">
+                    {% if finding.created_by %}
+                        {{ finding.created_by.full_name }}
+                    {% else %}
+                        Not recorded
+                    {% endif %}
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <h2 class="h4 fw-semibold mt-4">Files for this finding</h2>
+    <p class="text-secondary">
+        A file uploaded here belongs to the finding.
+        It is not attached to the inspection or to a corrective action.
+    </p>
+
+    {% with files=finding_files, upload_url=url_for('uploads.upload_finding', finding_id=finding.id) %}
+        {% include "attachment_panel.html" %}
+    {% endwith %}
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 mb-2">
+        <h2 class="h4 fw-semibold mb-0">Corrective actions</h2>
+        {% if can_edit %}
+            <a class="btn btn-seed"
+               href="{{ url_for('findings.action_new', finding_id=finding.id) }}">
+                Add corrective action
+            </a>
+        {% endif %}
+    </div>
+
+    <p class="text-secondary">
+        Completing an action does not change the finding status.
+        Change the finding separately when the problem itself is resolved or closed.
+    </p>
+
+    {% if actions %}
+        <div class="table-responsive card shadow-sm">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Action</th>
+                        <th scope="col">Responsible person</th>
+                        <th scope="col">Due</th>
+                        <th scope="col">Status</th>
+                        {% if can_edit %}
+                            <th scope="col"></th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for action in actions %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('findings.action_detail', finding_id=finding.id, action_id=action.id) }}">
+                                    {{ action.action_text }}
+                                </a>
+                            </td>
+                            <td>
+                                {{ action.responsible_name }}
+                                {% if action.responsible_user %}
+                                    <div class="small text-secondary">
+                                        {{ action.responsible_user.email }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ action.due_date.strftime("%d %b %Y") }}</td>
+                            <td>
+                                {{ action_status_labels.get(action.status, action.status) }}
+                                {% if action.completed_at %}
+                                    <div class="small text-secondary">
+                                        {{ action.completed_at.strftime("%d %b %Y %H:%M UTC") }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                            {% if can_edit %}
+                                <td>
+                                    <a href="{{ url_for('findings.action_edit', finding_id=finding.id, action_id=action.id) }}">
+                                        Edit
+                                    </a>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-secondary" role="status">
+            No corrective actions yet.
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

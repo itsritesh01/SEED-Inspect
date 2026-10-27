@@ -1,0 +1,79 @@
+
+{% extends "base.html" %}
+
+{% block title %}{{ heading }} | SEED Inspect{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h2">{{ heading }}</h1>
+    <p class="text-muted">Enter the project details below.</p>
+</div>
+
+<form method="post" class="card card-body">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control", placeholder="e.g. Highway Improvement Project") }}
+        {% for error in form.name.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        {{ form.code.label(class="form-label") }}
+        {{ form.code(class="form-control", placeholder="e.g. HPB-01") }}
+        <div class="form-text">Use 2–20 uppercase letters, numbers, and hyphens.</div>
+        {% for error in form.code.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        {{ form.client_name.label(class="form-label") }}
+        {{ form.client_name(class="form-control", placeholder="Client or organization (optional)") }}
+        {% for error in form.client_name.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="mb-3">
+        {{ form.location_summary.label(class="form-label") }}
+        {{ form.location_summary(class="form-control", placeholder="Project location (optional)") }}
+        {% for error in form.location_summary.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6 mb-3">
+            {{ form.start_date.label(class="form-label") }}
+            {{ form.start_date(class="form-control", type="date") }}
+            {% for error in form.start_date.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-6 mb-3">
+            {{ form.end_date.label(class="form-label") }}
+            {{ form.end_date(class="form-control", type="date") }}
+            {% for error in form.end_date.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        {{ form.description.label(class="form-label") }}
+        {{ form.description(class="form-control", rows="4", placeholder="Describe the project (optional)") }}
+        {% for error in form.description.errors %}
+        <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex gap-2">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ cancel_url }}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

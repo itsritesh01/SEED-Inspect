@@ -1,0 +1,108 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard | SEED Inspect{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+        <h1 class="h2">Dashboard</h1>
+        <p class="text-muted mb-0">Overview of project inspection and quality activities.</p>
+    </div>
+    <a href="{{ url_for('dashboard.search') }}" class="btn btn-seed">
+        Search everything
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    {% set cards = [
+        ('Active projects', counts.active_projects, 'bi-folder2-open'),
+        ('Active sites', counts.active_sites, 'bi-geo-alt'),
+        ('Inspections in progress', counts.inspections_in_progress, 'bi-clipboard-check'),
+        ('Open findings', counts.open_findings, 'bi-exclamation-circle'),
+        ('Open corrective actions', counts.open_actions, 'bi-tools'),
+        ('Past-due actions', counts.past_due_actions, 'bi-calendar-x'),
+        ('Failed checklist lines', counts.fail_lines, 'bi-x-circle'),
+        ('Attached files', counts.files, 'bi-paperclip')
+    ] %}
+
+    {% for label, value, icon_name in cards %}
+    <div class="col-6 col-md-4 col-xl-3">
+        <div class="card stage-card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">{{ label }}</div>
+                <div class="display-6 fw-semibold">{{ value }}</div>
+                {% if label == 'Past-due actions' %}
+                    <a href="{{ url_for('dashboard.action_list', due='past') }}" class="small">
+                        View past-due actions
+                    </a>
+                {% elif label == 'Open corrective actions' %}
+                    <a href="{{ url_for('dashboard.action_list', status='unfinished') }}" class="small">
+                        View unfinished actions
+                    </a>
+                {% elif label == 'Open findings' %}
+                    <a href="{{ url_for('findings.finding_list', status='unfinished') }}" class="small">
+                        View unfinished findings
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Recent inspections</h2>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for inspection in recent_inspections %}
+                <a class="list-group-item list-group-item-action"
+                   href="{{ url_for('inspections.inspection_detail', inspection_id=inspection.id) }}">
+                    <div class="d-flex justify-content-between gap-2">
+                        <strong>{{ inspection.inspection_number }}</strong>
+                        <span class="badge text-bg-secondary">
+                            {{ inspection.status|replace('_', ' ')|title }}
+                        </span>
+                    </div>
+                    <div>{{ inspection.title }}</div>
+                    <div class="small text-muted">{{ inspection.summary or 'No summary provided' }}</div>
+                </a>
+                {% else %}
+                <div class="list-group-item text-muted">No inspections found.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Recent findings</h2>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for finding in recent_findings %}
+                <a class="list-group-item list-group-item-action"
+                   href="{{ url_for('findings.finding_detail', finding_id=finding.id) }}">
+                    <div class="d-flex justify-content-between gap-2">
+                        <strong>{{ finding.title }}</strong>
+                        <span class="badge text-bg-secondary">
+                            {{ finding.status|replace('_', ' ')|title }}
+                        </span>
+                    </div>
+                    <div class="small text-muted">{{ finding.description|truncate(120) }}</div>
+                </a>
+                {% else %}
+                <div class="list-group-item text-muted">No findings found.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 small text-muted">
+    Past-due actions are unfinished actions whose due date is before {{ today.strftime('%d %b %Y') }}.
+</div>
+{% endblock %}

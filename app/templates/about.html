@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}About · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3">
+    <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 12</p>
+    <h1 class="h3 fw-semibold">About this prototype</h1>
+    <p>
+        SEED Inspect is a student prototype for organizing fictional engineering projects,
+        sites, inspections, checklists, findings, corrective actions, files, and reports.
+    </p>
+    <p>It is not a company system, and it does not approve real site work.</p>
+
+    <h2 class="h5">Who can do what</h2>
+    <ul>
+        <li>An administrator can manage accounts and open the audit log.</li>
+        <li>An administrator or inspector can add and edit projects, sites, inspections, checklists, findings, actions, and files.</li>
+        <li>A viewer can look, search, open the print report, and download the PDF. A viewer cannot change records.</li>
+        <li>There is no public registration page.</li>
+    </ul>
+
+    <h2 class="h5">What the demonstration data is</h2>
+    <p>
+        Names such as Meera Nair, Riya Sen, Arun Das, Harbor Point Bridge, and Depot Yard are fictional.
+        A checklist line marked Fail does not create a finding by itself.
+        The PDF lists file names. It does not place the picture inside the PDF.
+    </p>
+
+    <h2 class="h5">What the audit log does</h2>
+    <p>
+        It records sign-ins and changes made after Stage 11.
+        It does not copy older practice work.
+        It never stores a password.
+        Opening this About page does not add an audit row.
+    </p>
+</section>
+{% endblock %}

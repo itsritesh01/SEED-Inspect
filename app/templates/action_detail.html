@@ -1,0 +1,71 @@
+
+{% extends "base.html" %}
+
+{% block title %}Corrective action · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="py-3">
+    <p class="mb-2">
+        <a href="{{ url_for('findings.finding_detail', finding_id=finding.id) }}">
+            Back to {{ finding.title }}
+        </a>
+    </p>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+        <div>
+            <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 7</p>
+            <h1 class="h3 fw-semibold">Corrective action</h1>
+        </div>
+        {% if can_edit %}
+            <a class="btn btn-seed"
+               href="{{ url_for('findings.action_edit', finding_id=finding.id, action_id=action.id) }}">
+                Edit action
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="card shadow-sm mt-3">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Action</dt>
+                <dd class="col-sm-9">{{ action.action_text }}</dd>
+
+                <dt class="col-sm-3">Responsible person</dt>
+                <dd class="col-sm-9">
+                    {{ action.responsible_name }}
+                    {% if action.responsible_user %}
+                        <div class="small text-secondary">{{ action.responsible_user.email }}</div>
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Due date</dt>
+                <dd class="col-sm-9">{{ action.due_date.strftime("%d %b %Y") }}</dd>
+
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">{{ action_status_labels.get(action.status, action.status) }}</dd>
+
+                <dt class="col-sm-3">Completed</dt>
+                <dd class="col-sm-9">
+                    {% if action.completed_at %}
+                        {{ action.completed_at.strftime("%d %b %Y %H:%M UTC") }}
+                    {% else %}
+                        Not recorded
+                    {% endif %}
+                </dd>
+
+                <dt class="col-sm-3">Progress note</dt>
+                <dd class="col-sm-9">{{ action.progress_note or "Not recorded" }}</dd>
+            </dl>
+        </div>
+    </div>
+
+    <h2 class="h4 fw-semibold mt-4">Files for this action</h2>
+    <p class="text-secondary">
+        A file uploaded here belongs only to this corrective action.
+    </p>
+
+    {% with files=action_files, upload_url=url_for('uploads.upload_action', finding_id=finding.id, action_id=action.id) %}
+        {% include "attachment_panel.html" %}
+    {% endwith %}
+</section>
+{% endblock %}

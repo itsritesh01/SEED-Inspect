@@ -1,0 +1,76 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit user · SEED Inspect{% endblock %}
+
+{% block content %}
+<section class="row justify-content-center py-3">
+    <div class="col-lg-7">
+        <p class="text-uppercase small fw-semibold text-seed mb-2">Stage 3</p>
+        <h1 class="h3 fw-semibold">Edit user</h1>
+        <p class="text-secondary mb-2">{{ person.full_name }}</p>
+
+        {% if editing_self %}
+            <div class="alert alert-warning" role="status">
+                This is your account. You can change your name, email, and password here.
+                You cannot change your own role or turn off your own account.
+            </div>
+        {% endif %}
+
+        <form method="post" class="card shadow-sm" novalidate>
+            <div class="card-body p-4">
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+                    <label class="form-label" for="full_name">Full name</label>
+                    {{ form.full_name(class="form-control", id="full_name") }}
+                    {% for error in form.full_name.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="email">Email</label>
+                    {{ form.email(class="form-control", id="email", autocomplete="off") }}
+                    {% for error in form.email.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="role">Role</label>
+                    {{ form.role(class="form-select", id="role") }}
+                    {% for error in form.role.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3 form-check">
+                    {{ form.is_active(class="form-check-input", id="is_active") }}
+                    <label class="form-check-label" for="is_active">Account is active</label>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="new_password">New password</label>
+                    {{ form.new_password(class="form-control", id="new_password", autocomplete="new-password") }}
+                    <div class="form-text">Leave this blank to keep the current password.</div>
+                    {% for error in form.new_password.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="new_password_confirm">Repeat new password</label>
+                    {{ form.new_password_confirm(class="form-control", id="new_password_confirm", autocomplete="new-password") }}
+                    {% for error in form.new_password_confirm.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <button class="btn btn-seed" type="submit">Save changes</button>
+                <a class="btn btn-link" href="{{ url_for('accounts.user_list') }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
